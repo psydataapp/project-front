@@ -21,11 +21,11 @@ const MenuButton = () => {
       <Link to="/" className={classes.link}>
         <Button>홈</Button>
       </Link>
+      <Link to="/vaccinationcenter" className={classes.link}>
+        <Button>예방접종센터 조회</Button>
+      </Link>
       <Link to="/community" className={classes.link}>
         <Button>커뮤니티</Button>
-      </Link>
-      <Link className={classes.link}>
-        <Button>상품리뷰</Button>
       </Link>
     </div>
   );

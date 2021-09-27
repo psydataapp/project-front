@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -18,12 +18,10 @@ import {
 import { Forum } from "@material-ui/icons";
 import HomeIcon from "@material-ui/icons/Home";
 import { Suspense, lazy } from "react";
-import { createStore, applyMiddleware } from "redux";
-import rootReducer from "./redux/reducers";
-import rootSaga from "./redux/sagas";
-import { Provider } from "react-redux";
-import createSagaMiddleware from "@redux-saga/core";
 import MenuButton from "./components/menuButton/MenuButton";
+import { useDispatch } from "react-redux";
+import Home from "./components/home/Home";
+
 const Community = lazy(() => import("./components/community/Community"));
 const CommunityDetail = lazy(() =>
   import("./components/community/CommunityDetail")
@@ -31,11 +29,14 @@ const CommunityDetail = lazy(() =>
 const CommunityWrite = lazy(() =>
   import("./components/community/CommunityWrite")
 );
-
 const Login = lazy(() => import("./components/login/Login"));
 const SignUp = lazy(() => import("./components/signUp/SignUp"));
+
+const VaccinationCenter = lazy(() =>
+  import("./components/vaccinationCenter/VaccinationCenter")
+);
 const drawerWidth = "240px";
-const appBarHeight = "10vh";
+const appBarHeight = "10px";
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
@@ -74,20 +75,23 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-const sagaMiddleware = createSagaMiddleware();
-
-const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
-
-sagaMiddleware.run(rootSaga);
 
 function App() {
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const [isLogin, setIsLogin] = useState(false);
+  const dispatch = useDispatch();
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-
+  const handleLogOut = () => {
+    dispatch({ type: "LOG_OUT" });
+  };
+  useEffect(() => {
+    if (localStorage.getItem("nickname") !== null) {
+      setIsLogin(true);
+    }
+  }, []);
   const drawer = (
     <>
       <List component="nav" className={classes.list}>
@@ -99,12 +103,20 @@ function App() {
             <ListItemText>홈</ListItemText>
           </ListItem>
         </Link>
+        <Link to="/vaccinationcenter" className={classes.link}>
+          <ListItem button>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText>백신접종센터</ListItemText>
+          </ListItem>
+        </Link>
         <Link to="/community" className={classes.link}>
           <ListItem button>
             <ListItemIcon>
               <Forum />
             </ListItemIcon>
-            <ListItemText>게시판</ListItemText>
+            <ListItemText>커뮤니티</ListItemText>
           </ListItem>
         </Link>
       </List>
@@ -112,65 +124,72 @@ function App() {
   );
 
   return (
-    <Provider store={store}>
-      <Router>
-        <div className={classes.root}>
-          <header>
-            <AppBar position="fixed" className={classes.appBar}>
-              <Toolbar>
-                <IconButton
-                  edge="start"
-                  className={classes.menuButton}
-                  color="inherit"
-                  onClick={handleDrawerToggle}
-                >
-                  <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" noWrap className={classes.title}>
-                  Community
-                </Typography>
+    <Router>
+      <div className={classes.root}>
+        <header>
+          <AppBar position="fixed" className={classes.appBar}>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                className={classes.menuButton}
+                color="inherit"
+                onClick={handleDrawerToggle}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap className={classes.title}>
+                Project
+              </Typography>
+              {!isLogin && (
                 <Link to="/login" style={{ textDecoration: "none" }}>
                   <Button>Login</Button>
                 </Link>
-              </Toolbar>
-            </AppBar>
-            <Hidden lgUp implementation="css">
-              <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleDrawerToggle}
-              >
-                {drawer}
-              </Drawer>
+              )}
+
+              {isLogin && <Button onClick={handleLogOut}>Logout</Button>}
+            </Toolbar>
+          </AppBar>
+          <Hidden lgUp implementation="css">
+            <Drawer
+              variant="temporary"
+              open={mobileOpen}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleDrawerToggle}
+            >
+              {drawer}
+            </Drawer>
+          </Hidden>
+        </header>
+        <main className={classes.content}>
+          <div className={classes.toolbar} />
+          <Suspense fallback={<div>Loading...</div>}>
+            <Hidden mdDown>
+              <MenuButton />
             </Hidden>
-          </header>
-          <main className={classes.content}>
-            <div className={classes.toolbar} />
-            <Suspense fallback={<div>Loading...</div>}>
-              <Hidden mdDown>
-                <MenuButton />
-              </Hidden>
-              <Switch>
-                <Route path="/community" component={Community} exact></Route>
-                <Route
-                  path="/community/write"
-                  component={CommunityWrite}
-                  exact
-                ></Route>
-                <Route
-                  path="/community/:id"
-                  component={CommunityDetail}
-                  exact
-                ></Route>
-                <Route path="/login" component={Login} exact></Route>
-                <Route path="/signup" component={SignUp} exact></Route>
-              </Switch>
-            </Suspense>
-          </main>
-        </div>
-      </Router>
-    </Provider>
+            <Switch>
+              <Route path="/" component={Home} exact></Route>
+              <Route path="/community" component={Community} exact></Route>
+              <Route
+                path="/community/write"
+                component={CommunityWrite}
+                exact
+              ></Route>
+              <Route
+                path="/community/:id"
+                component={CommunityDetail}
+                exact
+              ></Route>
+              <Route path="/login" component={Login} exact></Route>
+              <Route path="/signup" component={SignUp} exact></Route>
+              <Route
+                path="/vaccinationcenter"
+                component={VaccinationCenter}
+              ></Route>
+            </Switch>
+          </Suspense>
+        </main>
+      </div>
+    </Router>
   );
 }
 

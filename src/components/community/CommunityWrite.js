@@ -7,11 +7,10 @@ import {
   Divider,
 } from "@material-ui/core";
 import { makeStyles, createTheme } from "@material-ui/core";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
-
+import AddToPhotosIcon from "@material-ui/icons/AddToPhotos";
 const CommunityWrite = () => {
   const useStyles = makeStyles((theme) => ({
     root: {
@@ -19,7 +18,7 @@ const CommunityWrite = () => {
     },
     paper: {
       padding: theme.spacing(2),
-      textAlign: "left",
+      textAlign: "center",
       color: theme.palette.text.secondary,
     },
     container: {
@@ -28,20 +27,15 @@ const CommunityWrite = () => {
       },
     },
     button: {
+      marginTop: "10px",
       marginLeft: "5px",
     },
     textField: {
-      [theme.breakpoints.down("sm")]: {
-        width: "80vh",
-      },
+      width: "100%",
+    },
+    imgUploadBtn: {
       [theme.breakpoints.up("lg")]: {
-        width: "100vh",
-      },
-      [theme.breakpoints.down("xs")]: {
-        width: "50vh",
-      },
-      [theme.breakpoints.down("md")]: {
-        width: "100vh",
+        display: "flex",
       },
     },
   }));
@@ -54,6 +48,19 @@ const CommunityWrite = () => {
     },
   };
 
+  const [imgData, setImageData] = useState(null);
+  const onChageImg = (e) => {
+    if (e.target.files[0]) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        setImageData(reader.result);
+      });
+      reader.readAsDataURL(e.target.files[0]);
+      const formData = new FormData();
+      formData.append("img", ImageData);
+      console.log(formData);
+    }
+  };
   const classes = useStyles();
 
   const dispatch = useDispatch();
@@ -63,17 +70,22 @@ const CommunityWrite = () => {
 
   const add = () => {
     const title = titleRef.current.value;
-
     const content = contentRef.current.value;
     const today = new Date();
     const time = today.toLocaleDateString();
+    const img = imgData;
+    const writer = localStorage.getItem("nickname")
     history.push("/community");
-    dispatch({ type: "ADD_BOARD", payload: { title, content, time } });
+    dispatch({
+      type: "ADD_BOARD",
+      payload: { title, content, time, img, writer },
+    });
   };
 
   const cancel = () => {
     history.push("/community");
   };
+
   return (
     <div className={classes.root} style={{ display: "flex" }}>
       <Grid container spacing={3} className={classes.container}>
@@ -115,10 +127,31 @@ const CommunityWrite = () => {
               inputRef={contentRef}
             />
             <Divider style={{ marginTop: "1rem", marginBottom: "2rem" }} />
-            <Button>
-              <InsertDriveFileIcon align="left" />
-              파일첨부
-            </Button>
+            <div className={classes.imgUploadBtn}>
+              <Button>
+                <label
+                  for="input-file"
+                  style={{ display: "flex", cursor: "pointer" }}
+                >
+                  <AddToPhotosIcon />
+                  이미지첨부
+                </label>
+              </Button>
+              <div>
+                <img
+                  src={imgData}
+                  style={{ width: "100px", height: "100px" }}
+                  alt=""
+                ></img>
+              </div>
+              <input
+                type="file"
+                style={{ display: "none" }}
+                id="input-file"
+                accept="image/*"
+                onChange={onChageImg}
+              />
+            </div>
           </Paper>
         </Grid>
         <Hidden xsDown>

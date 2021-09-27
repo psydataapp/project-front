@@ -26,7 +26,6 @@ const Community = () => {
         <Hidden xsDown>
           <Grid item sm={1} md={1} lg={2} />
         </Hidden>
-
         <Grid item xs={12} sm={10} md={10} lg={8}>
           <Paper className={classes.paper}>
             <CommunityHead />

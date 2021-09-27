@@ -1,5 +1,7 @@
 import { Button, makeStyles, TextField } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import { useRef } from "react";
+import { useDispatch } from "react-redux";
 const LoginForm = () => {
   const useStyles = makeStyles((theme) => ({
     div: {
@@ -13,6 +15,15 @@ const LoginForm = () => {
       margin: "10px",
     },
   }));
+  const userIdRef = useRef();
+  const passwordRef = useRef();
+  const dispatch = useDispatch();
+  const handleLogIn = () => {
+    const userId = userIdRef.current.value;
+    const password = passwordRef.current.value;
+
+    dispatch({ type: "LOG_IN", payload: { userId, password } });
+  };
 
   const classes = useStyles();
   return (
@@ -22,9 +33,7 @@ const LoginForm = () => {
         variant="outlined"
         className={classes.textField}
         size="small"
-        InputLabelProps={{
-          shrink: true,
-        }}
+        inputRef={userIdRef}
       />
       <TextField
         className={classes.textField}
@@ -32,12 +41,15 @@ const LoginForm = () => {
         size="small"
         type="password"
         variant="outlined"
-        InputLabelProps={{
-          shrink: true,
-        }}
+        inputRef={passwordRef}
       />
       <div>
-        <Button variant="outlined" color="primary" className={classes.button}>
+        <Button
+          variant="outlined"
+          color="primary"
+          className={classes.button}
+          onClick={handleLogIn}
+        >
           LogIn
         </Button>
         <Link to="/signup">
